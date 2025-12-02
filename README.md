@@ -1,50 +1,55 @@
-# Music SaaS Platform - Frontend
+# La Kapsul — plateforme SaaS musique
 
-Bienvenue sur le dépôt frontend de la plateforme SaaS musicale. Ce projet est construit avec Next.js 14, TypeScript, Tailwind CSS et shadcn/ui.
+Frontend Next.js (App Router) et socle backend (skeleton) pour connecter artistes et prestataires : création de services, réservation, dashboards et profils publics.
 
-## 📂 Structure du Projet
+## Fonctionnalités principales
+- Parcours public : landing, recherche, fiches prestataires avec liste des services.
+- Espaces privés artistes et prestataires : dashboards, réservations, gestion des services (mock + branchement Supabase pour les services).
+- UI design system basé sur shadcn/ui, framer-motion pour les animations, Zustand pour l’état global.
+- Intégration Supabase (PostgreSQL + Auth) prête pour remplacer les mocks.
 
-Voici l'architecture détaillée des dossiers et leur rôle :
+## Stack
+- Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, framer-motion.
+- Supabase (Postgres + Auth + Storage) via `@supabase/ssr`.
+- ESLint 9, TypeScript 5.
 
-### `app/`
-Cœur de l'application (App Router).
-- **`(public)/`** : Routes accessibles à tous (Landing page, Recherche, Profils publics).
-- **`(artist)/`** : Espace privé pour les artistes (Dashboard, Messagerie, Paiements).
-- **`(provider)/`** : Espace privé pour les prestataires (Gestion services, Calendrier, Stats).
-- **`(auth)/`** : Pages d'authentification (Connexion, Inscription).
-- **`layout.tsx`** : Layout racine (Fontes, Providers globaux).
-- **`globals.css`** : Styles globaux et directives Tailwind.
-
-### `components/`
-Bibliothèque de composants React.
-- **`ui/`** : Composants atomiques de shadcn/ui (Button, Input, Card...).
-- **`shared/`** : Composants partagés (Header, Footer, Navigation).
-- **`features/`** : Composants métier complexes (AudioPlayer, ChatInterface, BookingCalendar).
-
-### `lib/`
-Logique métier et utilitaires.
-- **`api.ts`** : Client HTTP configuré (Axios/Fetch) pour les appels backend.
-- **`utils.ts`** : Fonctions utilitaires (formatage dates, classes CSS).
-- **`constants.ts`** : Constantes globales (URLs, clés de config).
-
-### `hooks/`
-Hooks React personnalisés.
-- **`use-auth.ts`** : Gestion de l'authentification.
-- **`use-booking.ts`** : Logique de réservation.
-- **`use-chat.ts`** : Logique de messagerie temps réel.
-
-### `store/`
-Gestion d'état global avec **Zustand**.
-- **`user-store.ts`** : Infos utilisateur connecté.
-- **`player-store.ts`** : État du lecteur audio (lecture, pause, piste).
-
-### `types/`
-Définitions TypeScript partagées.
-- **`index.ts`** : Types principaux (User, Service, Booking, Message).
-
-## 🚀 Démarrage
+## Démarrage rapide (frontend)
+Prérequis : Node 20+, npm.
 
 ```bash
 npm install
 npm run dev
 ```
+Application sur http://localhost:3000.
+
+### Variables d’environnement
+Créer `.env.local` à la racine :
+```
+NEXT_PUBLIC_SUPABASE_URL=<url_supabase>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon_key>
+```
+
+## Commandes utiles
+- `npm run dev` : serveur de dev Next.
+- `npm run lint` : lint TypeScript/React.
+- `npm run build` : build production.
+
+## Structure du repo
+- `app/` : routes Next (App Router)
+  - `(public)/` landing, recherche, fiches prestataires.
+  - `(auth)/` login/signup.
+  - `(artist)/` dashboard artiste.
+  - `(provider)/` dashboard prestataire.
+- `components/` : UI shadcn + composants partagés/features.
+- `lib/` : utils, mocks, clients Supabase (`supabase-server`, `supabase-browser`), actions serveur.
+- `store/` : stores Zustand.
+- `types/` : types partagés (User, Service, Booking, Review…).
+- `backend/` : squelette d’API Node/Express (routes, services, sockets) non branché par défaut.
+
+## Supabase (remplacement des mocks)
+- Table `services` attend : `id`, `provider_id` (uuid), `name`, `description`, `price` (centimes), `duration` (minutes), `category`, timestamps.
+- L’action serveur `app/actions/get-services.ts` lit Supabase et retombe sur les mocks si aucun enregistrement ou erreur.
+
+## Déploiement
+- Vercel recommandé pour le frontend : renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans les env du projet.
+- Vérifier `npm run build` avant déploiement. Supabase doit contenir des données de services pour alimenter les pages provider.
