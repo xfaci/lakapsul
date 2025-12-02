@@ -27,7 +27,7 @@ const mapServiceRow = (row: ServiceRow): Service => ({
 });
 
 export async function getServices(providerId?: string): Promise<Service[]> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const query = supabase.from("services").select("*");
 
     if (providerId) {
