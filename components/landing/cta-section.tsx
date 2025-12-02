@@ -28,7 +28,7 @@ export function CtaSection() {
                             Prêt à lancer votre prochain projet ?
                         </h2>
                         <p className="text-lg md:text-xl text-primary-foreground/90 mb-10 max-w-2xl mx-auto">
-                            Rejoignez des milliers d'artistes et de professionnels qui font confiance à La Kapsul pour créer la musique de demain.
+                            Rejoignez des milliers d&apos;artistes et de professionnels qui font confiance à La Kapsul pour créer la musique de demain.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">

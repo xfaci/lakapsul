@@ -1,6 +1,7 @@
+import { getServices } from "@/app/actions/get-services";
 import { ProviderHeader } from "@/components/features/provider/provider-header";
 import { ServiceList } from "@/components/features/provider/service-list";
-import { MOCK_PROVIDERS, MOCK_SERVICES } from "@/lib/mock-data";
+import { MOCK_PROVIDERS } from "@/lib/mock-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
 
@@ -16,14 +17,14 @@ export function generateStaticParams() {
     }));
 }
 
-export default function ProviderPage({ params }: ProviderPageProps) {
+export default async function ProviderPage({ params }: ProviderPageProps) {
     const provider = MOCK_PROVIDERS.find((p) => p.id === params.id);
 
     if (!provider) {
         notFound();
     }
 
-    const services = MOCK_SERVICES.filter((s) => s.providerId === provider.id);
+    const services = await getServices(provider.id);
 
     return (
         <div className="min-h-screen pb-20">
@@ -68,7 +69,7 @@ export default function ProviderPage({ params }: ProviderPageProps) {
                     {/* Sidebar (Availability / Quick Info) */}
                     <div className="space-y-6">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                            <h3 className="font-semibold mb-4">Horaires d'ouverture</h3>
+                            <h3 className="font-semibold mb-4">Horaires d&apos;ouverture</h3>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span>Lundi - Vendredi</span>

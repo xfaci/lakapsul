@@ -8,7 +8,7 @@ export default function HelpPage() {
     return (
         <div className="container py-24 max-w-4xl">
             <div className="text-center mb-16">
-                <h1 className="text-4xl font-bold tracking-tight mb-4">Centre d'aide</h1>
+                <h1 className="text-4xl font-bold tracking-tight mb-4">Centre d&apos;aide</h1>
                 <p className="text-xl text-muted-foreground mb-8">
                     Comment pouvons-nous vous aider ?
                 </p>
@@ -31,13 +31,13 @@ export default function HelpPage() {
                         <AccordionItem value="item-2">
                             <AccordionTrigger>Quels sont les frais de service ?</AccordionTrigger>
                             <AccordionContent>
-                                L'inscription est gratuite pour les artistes. Nous prélevons une commission de 10% uniquement sur les réservations effectuées par les prestataires.
+                                L&apos;inscription est gratuite pour les artistes. Nous prélevons une commission de 10% uniquement sur les réservations effectuées par les prestataires.
                             </AccordionContent>
                         </AccordionItem>
                         <AccordionItem value="item-3">
                             <AccordionTrigger>Comment se passe le paiement ?</AccordionTrigger>
                             <AccordionContent>
-                                Le paiement est sécurisé et cantonné jusqu'à la fin de la prestation. Le prestataire est payé une fois le service validé.
+                                Le paiement est sécurisé et cantonné jusqu&apos;à la fin de la prestation. Le prestataire est payé une fois le service validé.
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>

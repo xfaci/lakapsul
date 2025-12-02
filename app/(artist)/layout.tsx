@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Home, LayoutDashboard, Mic2, Music2, Settings, User } from "lucide-react";
+import { LayoutDashboard, Mic2, Music2, Settings, User } from "lucide-react";
 import Link from "next/link";
 
 export default function ArtistLayout({
@@ -53,7 +53,7 @@ export default function ArtistLayout({
                 <div className="p-4 border-t border-white/10">
                     <Card className="bg-gradient-to-br from-primary/20 to-purple-600/20 border-none">
                         <div className="p-4">
-                            <h4 className="font-semibold text-sm mb-1">Besoin d'aide ?</h4>
+                            <h4 className="font-semibold text-sm mb-1">Besoin d&apos;aide ?</h4>
                             <p className="text-xs text-muted-foreground mb-3">Contactez le support 24/7</p>
                             <Button size="sm" className="w-full text-xs">Support</Button>
                         </div>

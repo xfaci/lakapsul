@@ -28,7 +28,7 @@ export default function SignupPage() {
                     Créer un compte
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Rejoignez la communauté La Kapsul dès aujourd'hui
+                    Rejoignez la communauté La Kapsul dès aujourd&apos;hui
                 </p>
             </div>
             <div className="grid gap-6 bg-card/40 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-2xl">
@@ -103,7 +103,7 @@ export default function SignupPage() {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                            Ou s'inscrire avec
+                            Ou s&apos;inscrire avec
                         </span>
                     </div>
                 </div>

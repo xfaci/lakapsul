@@ -40,7 +40,7 @@ export function Navbar() {
                                 <Link href="/login">Se connecter</Link>
                             </Button>
                             <Button asChild>
-                                <Link href="/signup">S'inscrire</Link>
+                                <Link href="/signup">S&apos;inscrire</Link>
                             </Button>
                         </div>
                     )}

@@ -21,7 +21,7 @@ export default function AuthLayout({
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
                         <p className="text-lg">
-                            &ldquo;La Kapsul a transformé ma façon de travailler. J'ai trouvé les meilleurs ingénieurs pour mon album en quelques clics.&rdquo;
+                            &ldquo;La Kapsul a transformé ma façon de travailler. J&apos;ai trouvé les meilleurs ingénieurs pour mon album en quelques clics.&rdquo;
                         </p>
                         <footer className="text-sm">Sofia Davis, Artiste Indépendante</footer>
                     </blockquote>

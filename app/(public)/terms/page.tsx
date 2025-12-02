@@ -1,7 +1,7 @@
 export default function TermsPage() {
     return (
         <div className="container py-24 max-w-4xl">
-            <h1 className="text-4xl font-bold tracking-tight mb-8">Conditions Générales d'Utilisation</h1>
+            <h1 className="text-4xl font-bold tracking-tight mb-8">Conditions Générales d&apos;Utilisation</h1>
 
             <div className="prose prose-gray dark:prose-invert max-w-none">
                 <p className="lead">
@@ -10,12 +10,12 @@ export default function TermsPage() {
 
                 <h2>1. Objet</h2>
                 <p>
-                    Les présentes Conditions Générales d'Utilisation (ci-après "CGU") ont pour objet de définir les modalités et conditions d'utilisation des services proposés sur le site La Kapsul.
+                    Les présentes Conditions Générales d&apos;Utilisation (ci-après &quot;CGU&quot;) ont pour objet de définir les modalités et conditions d&apos;utilisation des services proposés sur le site La Kapsul.
                 </p>
 
                 <h2>2. Accès au site</h2>
                 <p>
-                    Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet. Tous les coûts afférents à l'accès au site, que ce soient les frais matériels, logiciels ou d'accès à internet sont exclusivement à la charge de l'utilisateur.
+                    Le site est accessible gratuitement à tout utilisateur disposant d&apos;un accès à internet. Tous les coûts afférents à l&apos;accès au site, que ce soient les frais matériels, logiciels ou d&apos;accès à internet sont exclusivement à la charge de l&apos;utilisateur.
                 </p>
 
                 <h2>3. Services proposés</h2>
@@ -25,12 +25,12 @@ export default function TermsPage() {
 
                 <h2>4. Responsabilité</h2>
                 <p>
-                    La Kapsul ne saurait être tenue pour responsable des dommages directs ou indirects qui pourraient résulter de l'accès ou de l'utilisation du site ou des informations y figurant.
+                    La Kapsul ne saurait être tenue pour responsable des dommages directs ou indirects qui pourraient résulter de l&apos;accès ou de l&apos;utilisation du site ou des informations y figurant.
                 </p>
 
                 <h2>5. Données personnelles</h2>
                 <p>
-                    Conformément à la réglementation en vigueur, vous disposez d'un droit d'accès, de rectification et de suppression des données vous concernant.
+                    Conformément à la réglementation en vigueur, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression des données vous concernant.
                 </p>
             </div>
         </div>

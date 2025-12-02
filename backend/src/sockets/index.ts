@@ -1,8 +1,9 @@
 import { Server } from 'socket.io';
+import type { Server as HttpServer } from 'http';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 
-export function attachSockets(httpServer: any) {
+export function attachSockets(httpServer: HttpServer) {
   const origins = env.SOCKET_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) || '*';
   const io = new Server(httpServer, {
     cors: {
