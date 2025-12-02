@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Music SaaS Platform - Frontend
 
-## Getting Started
+Bienvenue sur le dépôt frontend de la plateforme SaaS musicale. Ce projet est construit avec Next.js 14, TypeScript, Tailwind CSS et shadcn/ui.
 
-First, run the development server:
+## 📂 Structure du Projet
+
+Voici l'architecture détaillée des dossiers et leur rôle :
+
+### `app/`
+Cœur de l'application (App Router).
+- **`(public)/`** : Routes accessibles à tous (Landing page, Recherche, Profils publics).
+- **`(artist)/`** : Espace privé pour les artistes (Dashboard, Messagerie, Paiements).
+- **`(provider)/`** : Espace privé pour les prestataires (Gestion services, Calendrier, Stats).
+- **`(auth)/`** : Pages d'authentification (Connexion, Inscription).
+- **`layout.tsx`** : Layout racine (Fontes, Providers globaux).
+- **`globals.css`** : Styles globaux et directives Tailwind.
+
+### `components/`
+Bibliothèque de composants React.
+- **`ui/`** : Composants atomiques de shadcn/ui (Button, Input, Card...).
+- **`shared/`** : Composants partagés (Header, Footer, Navigation).
+- **`features/`** : Composants métier complexes (AudioPlayer, ChatInterface, BookingCalendar).
+
+### `lib/`
+Logique métier et utilitaires.
+- **`api.ts`** : Client HTTP configuré (Axios/Fetch) pour les appels backend.
+- **`utils.ts`** : Fonctions utilitaires (formatage dates, classes CSS).
+- **`constants.ts`** : Constantes globales (URLs, clés de config).
+
+### `hooks/`
+Hooks React personnalisés.
+- **`use-auth.ts`** : Gestion de l'authentification.
+- **`use-booking.ts`** : Logique de réservation.
+- **`use-chat.ts`** : Logique de messagerie temps réel.
+
+### `store/`
+Gestion d'état global avec **Zustand**.
+- **`user-store.ts`** : Infos utilisateur connecté.
+- **`player-store.ts`** : État du lecteur audio (lecture, pause, piste).
+
+### `types/`
+Définitions TypeScript partagées.
+- **`index.ts`** : Types principaux (User, Service, Booking, Message).
+
+## 🚀 Démarrage
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
