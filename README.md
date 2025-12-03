@@ -53,3 +53,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ## Déploiement
 - Vercel recommandé pour le frontend : renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans les env du projet.
 - Vérifier `npm run build` avant déploiement. Supabase doit contenir des données de services pour alimenter les pages provider.
+# lakapsul-demo
