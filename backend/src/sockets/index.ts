@@ -1,10 +1,10 @@
 import { Server } from 'socket.io';
-import type { Server as HttpServer } from 'http';
+import http from 'http';
 import { env } from '../config/env';
-import { logger } from '../config/logger';
 
-export function attachSockets(httpServer: HttpServer) {
-  const origins = env.SOCKET_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) || '*';
+export function setupSocketIO(httpServer: http.Server) {
+  const origins = env.CLIENT_URL?.split(',').map((o: string) => o.trim()) || '*';
+
   const io = new Server(httpServer, {
     cors: {
       origin: origins,
@@ -14,7 +14,26 @@ export function attachSockets(httpServer: HttpServer) {
   });
 
   io.on('connection', (socket) => {
-    logger.info({ socketId: socket.id }, 'socket connected');
+    console.log('Client connected:', socket.id);
+
+    // Join user's room for notifications
+    socket.on('join', (userId: string) => {
+      socket.join(`user:${userId}`);
+      console.log(`User ${userId} joined their room`);
+    });
+
+    // Chat functionality
+    socket.on('joinConversation', (conversationId: string) => {
+      socket.join(`conversation:${conversationId}`);
+    });
+
+    socket.on('sendMessage', (data: { conversationId: string; message: string }) => {
+      io.to(`conversation:${data.conversationId}`).emit('newMessage', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+    });
   });
 
   return io;

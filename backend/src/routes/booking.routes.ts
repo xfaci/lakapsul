@@ -1,9 +1,16 @@
 import { FastifyInstance } from 'fastify';
-import { createBooking, listBookings, listIncomingBookings } from '../controllers/booking.controller';
-import { authGuard } from '../middlewares/authGuard';
+import {
+  createBooking,
+  listMyBookings,
+  listIncomingBookings,
+  updateBookingStatus,
+  getBookingById
+} from '../controllers/booking.controller';
 
 export default async function bookingRoutes(app: FastifyInstance) {
-  app.post('/', { preHandler: [authGuard] }, createBooking);
-  app.get('/', { preHandler: [authGuard] }, listBookings);
-  app.get('/incoming', { preHandler: [authGuard] }, listIncomingBookings);
+  app.post('/', createBooking);
+  app.get('/me', listMyBookings);
+  app.get('/incoming', listIncomingBookings);
+  app.get('/:id', getBookingById);
+  app.patch('/:id/status', updateBookingStatus);
 }

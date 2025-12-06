@@ -1,9 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { getMe, getProviderById, listProviders } from '../controllers/user.controller';
-import { authGuard } from '../middlewares/authGuard';
+import { listProviders, getProviderById, getProfile, updateProfile } from '../controllers/user.controller';
 
 export default async function userRoutes(app: FastifyInstance) {
-  app.get('/me', { preHandler: [authGuard] }, getMe);
+  // Provider search
   app.get('/', listProviders);
   app.get('/:id', getProviderById);
+}
+
+export async function profileRoutes(app: FastifyInstance) {
+  app.get('/:username', getProfile);
+  app.put('/me', updateProfile);
 }
