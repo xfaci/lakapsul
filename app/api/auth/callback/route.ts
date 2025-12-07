@@ -10,6 +10,10 @@ export async function GET(request: Request) {
     if (code) {
         const supabase = await createClient();
 
+        if (!supabase) {
+            return NextResponse.redirect(`${origin}/login?error=supabase_config`);
+        }
+
         // Exchange code for session
         const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code);
 

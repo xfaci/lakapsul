@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/user-store";
-import { supabase } from "@/lib/supabase-browser";
+import { hasSupabaseConfig, supabase } from "@/lib/supabase-browser";
 
 export default function SignupPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +76,12 @@ export default function SignupPage() {
     }
 
     async function handleOAuthLogin(provider: 'google' | 'discord') {
+        if (!supabase || !hasSupabaseConfig) {
+            setError("OAuth indisponible : ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
@@ -204,11 +210,11 @@ export default function SignupPage() {
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <Button variant="outline" type="button" disabled={isLoading} onClick={() => handleOAuthLogin('google')} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
+                    <Button variant="outline" type="button" disabled={isLoading || !hasSupabaseConfig} onClick={() => handleOAuthLogin('google')} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
                         <Icons.google className="h-5 w-5" />
                         <span className="sr-only">Google</span>
                     </Button>
-                    <Button variant="outline" type="button" disabled={isLoading} onClick={() => handleOAuthLogin('discord')} className="bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20 hover:bg-[#5865F2]/20 hover:text-[#5865F2]">
+                    <Button variant="outline" type="button" disabled={isLoading || !hasSupabaseConfig} onClick={() => handleOAuthLogin('discord')} className="bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20 hover:bg-[#5865F2]/20 hover:text-[#5865F2]">
                         <Icons.discord className="h-5 w-5" />
                         <span className="sr-only">Discord</span>
                     </Button>

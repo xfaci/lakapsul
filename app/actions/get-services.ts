@@ -28,6 +28,11 @@ const mapServiceRow = (row: ServiceRow): Service => ({
 
 export async function getServices(providerId?: string): Promise<Service[]> {
     const supabase = await createClient();
+
+    if (!supabase) {
+        return providerId ? MOCK_SERVICES.filter((s) => s.providerId === providerId) : MOCK_SERVICES;
+    }
+
     const query = supabase.from("services").select("*");
 
     if (providerId) {
