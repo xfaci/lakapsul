@@ -1,56 +1,66 @@
-# La Kapsul — plateforme SaaS musique
+# La Kapsul — la plateforme des artistes qui veulent shipper
 
-Frontend Next.js (App Router) et socle backend (skeleton) pour connecter artistes et prestataires : création de services, réservation, dashboards et profils publics.
+Marketplace SaaS pour connecter artistes independants et prestataires (studios, inges son, beatmakers). Front Next.js deja shippe, backend Supabase-ready, branding premium et UX moderne. Objectif : permettre a un artiste de booker un pro fiable en moins de 3 clics, et a un prestataire de tout piloter depuis un dashboard.
 
-## Fonctionnalités principales
-- Parcours public : landing, recherche, fiches prestataires avec liste des services.
-- Espaces privés artistes et prestataires : dashboards, réservations, gestion des services (mock + branchement Supabase pour les services).
-- UI design system basé sur shadcn/ui, framer-motion pour les animations, Zustand pour l’état global.
-- Intégration Supabase (PostgreSQL + Auth) prête pour remplacer les mocks.
+## Ce que propose le produit
+- Parcours public inspire SaaS : hero expressif, call-to-action, pricing, CGU, navigation themable.
+- Recherche et fiches prestataires avec liste de services, categories et tarifs.
+- Espace artiste : tableau de bord, reservations, stats, favoris.
+- Espace prestataire : gestion des services (mocks + switch Supabase), calendrier, profil public partageable.
+- Experience UI : design system shadcn/ui, framer-motion pour les transitions, theming light/dark, icones lucide.
+- Socle data : Supabase (Postgres + Auth + Storage) connecte via `@supabase/ssr`; fallback mocks pour developper sans base.
 
-## Stack
-- Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, framer-motion.
-- Supabase (Postgres + Auth + Storage) via `@supabase/ssr`.
-- ESLint 9, TypeScript 5.
+## Architecture et stack
+- Frontend : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Zustand pour l'etat, shadcn/ui.
+- Animations : framer-motion; charts via Recharts; formulaires et selects via Radix.
+- Auth/data : Supabase SSR. Prisma et Vercel Postgres disponibles si besoin de serveurs custom.
+- Backend : dossier `backend/` avec squelette Node/Express (routes, services, sockets) non branche par defaut.
+- Qualite : ESLint 9, TypeScript strict.
 
-## Démarrage rapide (frontend)
-Prérequis : Node 20+, npm.
-
+## Getting started
+Prerequis : Node 20+, npm.
 ```bash
 npm install
 npm run dev
 ```
-Application sur http://localhost:3000.
+L'app tourne sur http://localhost:3000.
 
-### Variables d’environnement
-Créer `.env.local` à la racine :
+### Variables d'environnement
+Creer un fichier `.env.local` a la racine :
 ```
 NEXT_PUBLIC_SUPABASE_URL=<url_supabase>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ```
+Pour activer Storage : ajouter un bucket `avatars` et `portfolio` dans Supabase.
 
-## Commandes utiles
-- `npm run dev` : serveur de dev Next.
-- `npm run lint` : lint TypeScript/React.
+### Scripts
+- `npm run dev` : serveur Next en mode dev.
 - `npm run build` : build production.
+- `npm run start` : serveur production (apres build).
+- `npm run lint` : verification lint.
 
-## Structure du repo
-- `app/` : routes Next (App Router)
-  - `(public)/` landing, recherche, fiches prestataires.
-  - `(auth)/` login/signup.
-  - `(artist)/` dashboard artiste.
-  - `(provider)/` dashboard prestataire.
-- `components/` : UI shadcn + composants partagés/features.
-- `lib/` : utils, mocks, clients Supabase (`supabase-server`, `supabase-browser`), actions serveur.
+## Structure
+- `app/(public)/` : landing, pricing, recherche, fiches prestataires.
+- `app/(auth)/` : login/signup.
+- `app/(artist)/` : dashboard artiste.
+- `app/provider/` : dashboard prestataire.
+- `components/` : design system shadcn + UI feature.
+- `lib/` : utils, mocks, clients Supabase (server/browser), server actions.
 - `store/` : stores Zustand.
-- `types/` : types partagés (User, Service, Booking, Review…).
-- `backend/` : squelette d’API Node/Express (routes, services, sockets) non branché par défaut.
+- `types/` : types partages (User, Service, Booking, Review, etc.).
+- `backend/` : squelette API Node/Express.
 
-## Supabase (remplacement des mocks)
+## Data et branchement Supabase
 - Table `services` attend : `id`, `provider_id` (uuid), `name`, `description`, `price` (centimes), `duration` (minutes), `category`, timestamps.
-- L’action serveur `app/actions/get-services.ts` lit Supabase et retombe sur les mocks si aucun enregistrement ou erreur.
+- `app/actions/get-services.ts` lit Supabase et retombe sur les mocks si absence de donnees.
+- Guide detaillé : `backend_guide.md` + `backend-instructions.md` pour les migrations et endpoints.
 
-## Déploiement
-- Vercel recommandé pour le frontend : renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans les env du projet.
-- Vérifier `npm run build` avant déploiement. Supabase doit contenir des données de services pour alimenter les pages provider.
-# lakapsul-demo
+## Roadmap produit (suggestions)
+- Checkout securise et messaging en temps reel (artists x providers).
+- Calendar sync (Google/Apple) et paiement milestone.
+- Reviews verifiees et score de fiabilite.
+- Mode decouverte : playlists de prestataires par genre/ville.
+
+## Deploiement
+- Frontend : Vercel recommande. Renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans les env du projet.
+- Donnees : injecter des services dans Supabase avant mise en ligne pour alimenter les pages providers.

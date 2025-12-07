@@ -7,18 +7,89 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Mic2, Music2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/user-store";
+import { supabase } from "@/lib/supabase-browser";
 
 export default function SignupPage() {
     const [isLoading, setIsLoading] = useState(false);
-    const [role, setRole] = useState<"artist" | "provider">("artist");
+    const [error, setError] = useState<string | null>(null);
+    const [role, setRole] = useState<"ARTIST" | "PROVIDER">("ARTIST");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const router = useRouter();
+    const login = useUserStore((state) => state.login);
 
     async function onSubmit(event: React.SyntheticEvent) {
         event.preventDefault();
         setIsLoading(true);
+        setError(null);
 
-        setTimeout(() => {
+        // Create username from first and last name
+        const username = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`.replace(/\s+/g, '_');
+
+        try {
+            const response = await fetch("/api/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    username,
+                    role,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Une erreur est survenue");
+                setIsLoading(false);
+                return;
+            }
+
+            // Store JWT token
+            localStorage.setItem("token", data.token);
+
+            // Update user store
+            login({
+                id: data.user.id,
+                email: data.user.email,
+                name: data.user.profile?.displayName || `${firstName} ${lastName}`,
+                role: data.user.role,
+            });
+
+            // Redirect based on role
+            if (data.user.role === "PROVIDER") {
+                router.push("/provider/dashboard");
+            } else {
+                router.push("/dashboard");
+            }
+        } catch {
+            setError("Erreur de connexion au serveur");
             setIsLoading(false);
-        }, 3000);
+        }
+    }
+
+    async function handleOAuthLogin(provider: 'google' | 'discord') {
+        setIsLoading(true);
+        setError(null);
+
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                redirectTo: `${window.location.origin}/api/auth/callback`,
+            },
+        });
+
+        if (error) {
+            setError(error.message);
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -32,11 +103,16 @@ export default function SignupPage() {
                 </p>
             </div>
             <div className="grid gap-6 bg-card/40 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-2xl">
+                {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm">
+                        {error}
+                    </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                     <div
-                        className={`cursor-pointer rounded-xl border-2 p-4 hover:border-primary hover:bg-accent transition-all ${role === "artist" ? "border-primary bg-accent" : "border-muted"
+                        className={`cursor-pointer rounded-xl border-2 p-4 hover:border-primary hover:bg-accent transition-all ${role === "ARTIST" ? "border-primary bg-accent" : "border-muted"
                             }`}
-                        onClick={() => setRole("artist")}
+                        onClick={() => setRole("ARTIST")}
                     >
                         <Music2 className="mb-2 h-6 w-6" />
                         <div className="font-semibold">Artiste</div>
@@ -45,9 +121,9 @@ export default function SignupPage() {
                         </div>
                     </div>
                     <div
-                        className={`cursor-pointer rounded-xl border-2 p-4 hover:border-primary hover:bg-accent transition-all ${role === "provider" ? "border-primary bg-accent" : "border-muted"
+                        className={`cursor-pointer rounded-xl border-2 p-4 hover:border-primary hover:bg-accent transition-all ${role === "PROVIDER" ? "border-primary bg-accent" : "border-muted"
                             }`}
-                        onClick={() => setRole("provider")}
+                        onClick={() => setRole("PROVIDER")}
                     >
                         <Mic2 className="mb-2 h-6 w-6" />
                         <div className="font-semibold">Prestataire</div>
@@ -62,11 +138,25 @@ export default function SignupPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="firstName">Prénom</Label>
-                                <Input id="firstName" placeholder="John" required disabled={isLoading} />
+                                <Input
+                                    id="firstName"
+                                    placeholder="John"
+                                    required
+                                    disabled={isLoading}
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="lastName">Nom</Label>
-                                <Input id="lastName" placeholder="Doe" required disabled={isLoading} />
+                                <Input
+                                    id="lastName"
+                                    placeholder="Doe"
+                                    required
+                                    disabled={isLoading}
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="grid gap-2">
@@ -79,6 +169,9 @@ export default function SignupPage() {
                                 autoComplete="email"
                                 autoCorrect="off"
                                 disabled={isLoading}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
                             />
                         </div>
                         <div className="grid gap-2">
@@ -87,6 +180,9 @@ export default function SignupPage() {
                                 id="password"
                                 type="password"
                                 disabled={isLoading}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
                             />
                         </div>
                         <Button disabled={isLoading}>
@@ -107,18 +203,14 @@ export default function SignupPage() {
                         </span>
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                    <Button variant="outline" type="button" disabled={isLoading} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
+                <div className="grid grid-cols-2 gap-3">
+                    <Button variant="outline" type="button" disabled={isLoading} onClick={() => handleOAuthLogin('google')} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
                         <Icons.google className="h-5 w-5" />
                         <span className="sr-only">Google</span>
                     </Button>
-                    <Button variant="outline" type="button" disabled={isLoading} className="bg-[#ff5500]/10 text-[#ff5500] border-[#ff5500]/20 hover:bg-[#ff5500]/20 hover:text-[#ff5500]">
-                        <Icons.soundcloud className="h-8 w-8" />
-                        <span className="sr-only">SoundCloud</span>
-                    </Button>
-                    <Button variant="outline" type="button" disabled={isLoading} className="bg-white/5 border-white/10 hover:bg-white/10 hover:text-white">
-                        <Icons.apple className="h-5 w-5" />
-                        <span className="sr-only">Apple</span>
+                    <Button variant="outline" type="button" disabled={isLoading} onClick={() => handleOAuthLogin('discord')} className="bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20 hover:bg-[#5865F2]/20 hover:text-[#5865F2]">
+                        <Icons.discord className="h-5 w-5" />
+                        <span className="sr-only">Discord</span>
                     </Button>
                 </div>
                 <p className="px-8 text-center text-sm text-muted-foreground">
