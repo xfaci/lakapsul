@@ -10,16 +10,22 @@ export async function GET(
         const profile = await prisma.profile.findUnique({
             where: { id },
             include: {
-                user: { select: { id: true, role: true, createdAt: true } },
+                user: {
+                    select: {
+                        id: true,
+                        role: true,
+                        createdAt: true,
+                        receivedReviews: {
+                            include: {
+                                author: { select: { profile: true } },
+                            },
+                            orderBy: { createdAt: "desc" },
+                            take: 20,
+                        },
+                    },
+                },
                 services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
                 media: { orderBy: { createdAt: "desc" }, take: 20 },
-                receivedReviews: {
-                    include: {
-                        author: { select: { profile: true } },
-                    },
-                    orderBy: { createdAt: "desc" },
-                    take: 20,
-                },
             },
         });
 

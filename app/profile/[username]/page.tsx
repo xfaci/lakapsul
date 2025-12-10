@@ -18,7 +18,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
     }
 
     const services = provider.services;
-    const reviews = provider.receivedReviews;
+    const reviews = provider.user.receivedReviews ?? [];
     const gallery = provider.media.filter((m) => m.type === "IMAGE");
 
     return (
