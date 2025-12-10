@@ -19,8 +19,8 @@ export function ProviderCard({ provider }: ProviderCardProps) {
             <CardContent className="p-6 pt-0 -mt-12">
                 <div className="flex justify-between items-start">
                     <Avatar className="h-24 w-24 border-4 border-background">
-                        <AvatarImage src={provider.avatarUrl ?? undefined} alt={provider.name} />
-                        <AvatarFallback>{provider.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarImage src={provider.avatarUrl ?? undefined} alt={provider.displayName} />
+                        <AvatarFallback>{provider.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex items-center bg-background/80 backdrop-blur px-2 py-1 rounded-full text-sm font-medium shadow-sm mt-14">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
@@ -29,7 +29,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
                 </div>
 
                 <div className="mt-4">
-                    <h3 className="font-bold text-lg">{provider.name}</h3>
+                    <h3 className="font-bold text-lg">{provider.displayName}</h3>
                     <div className="flex items-center text-sm text-muted-foreground mt-1">
                         <MapPin className="h-3 w-3 mr-1" />
                         {provider.location}
