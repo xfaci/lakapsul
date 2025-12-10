@@ -19,7 +19,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
             <CardContent className="p-6 pt-0 -mt-12">
                 <div className="flex justify-between items-start">
                     <Avatar className="h-24 w-24 border-4 border-background">
-                        <AvatarImage src={provider.avatarUrl} alt={provider.name} />
+                        <AvatarImage src={provider.avatarUrl ?? undefined} alt={provider.name} />
                         <AvatarFallback>{provider.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex items-center bg-background/80 backdrop-blur px-2 py-1 rounded-full text-sm font-medium shadow-sm mt-14">
