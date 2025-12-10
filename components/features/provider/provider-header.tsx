@@ -1,11 +1,20 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User } from "@/types";
 import { MapPin, MessageSquare, Share2, Star } from "lucide-react";
 
 interface ProviderHeaderProps {
-    provider: User & { rating: number; reviewCount: number; location: string; tags: string[] };
+    provider: {
+        id: string;
+        name: string;
+        bio: string;
+        avatarUrl?: string;
+        rating: number;
+        reviewCount: number;
+        location: string;
+        tags: string[];
+        minPrice?: number;
+    };
 }
 
 export function ProviderHeader({ provider }: ProviderHeaderProps) {
