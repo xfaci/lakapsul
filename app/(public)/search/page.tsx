@@ -1,11 +1,13 @@
 import { SearchFilters } from "@/components/features/search/search-filters";
 import { ProviderCard } from "@/components/features/search/provider-card";
-import { MOCK_PROVIDERS } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { getProviders } from "@/app/actions/get-providers";
 
-export default function SearchPage() {
+export default async function SearchPage() {
+    const providers = await getProviders();
+
     return (
         <div className="container py-8">
             <div className="flex flex-col md:flex-row gap-8">
@@ -27,12 +29,17 @@ export default function SearchPage() {
 
                     {/* Results Count */}
                     <div className="text-sm text-muted-foreground">
-                        {MOCK_PROVIDERS.length} résultats trouvés
+                        {providers.length} résultat{providers.length > 1 ? "s" : ""} trouvé{providers.length > 1 ? "s" : ""}
                     </div>
 
                     {/* Results Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {MOCK_PROVIDERS.map((provider) => (
+                        {providers.length === 0 && (
+                            <div className="text-muted-foreground text-sm">
+                                Aucun prestataire pour le moment. Revenez bientôt !
+                            </div>
+                        )}
+                        {providers.map((provider) => (
                             <ProviderCard key={provider.id} provider={provider} />
                         ))}
                     </div>

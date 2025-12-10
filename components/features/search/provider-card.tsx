@@ -4,12 +4,10 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MOCK_PROVIDERS } from "@/lib/mock-data";
-
-type Provider = typeof MOCK_PROVIDERS[0];
+import { ProviderSummary } from "@/app/actions/get-providers";
 
 interface ProviderCardProps {
-    provider: Provider;
+    provider: ProviderSummary;
 }
 
 export function ProviderCard({ provider }: ProviderCardProps) {
@@ -50,10 +48,14 @@ export function ProviderCard({ provider }: ProviderCardProps) {
                 </div>
             </CardContent>
             <CardFooter className="p-6 pt-0 flex items-center justify-between">
-                <div>
-                    <span className="text-xs text-muted-foreground">À partir de</span>
-                    <div className="font-bold text-lg">{provider.minPrice}€</div>
-                </div>
+                {provider.minPrice !== null ? (
+                    <div>
+                        <span className="text-xs text-muted-foreground">À partir de</span>
+                        <div className="font-bold text-lg">{provider.minPrice}€</div>
+                    </div>
+                ) : (
+                    <div className="text-xs text-muted-foreground">Aucune offre publiée</div>
+                )}
                 <Button asChild>
                     <Link href={`/provider/${provider.id}`}>Voir le profil</Link>
                 </Button>

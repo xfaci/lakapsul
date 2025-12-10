@@ -1,7 +1,7 @@
+import { getProviderDetail } from "@/app/actions/get-providers";
 import { getServices } from "@/app/actions/get-services";
 import { ProviderHeader } from "@/components/features/provider/provider-header";
 import { ServiceList } from "@/components/features/provider/service-list";
-import { MOCK_PROVIDERS } from "@/lib/mock-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
 
@@ -11,34 +11,39 @@ interface ProviderPageProps {
     };
 }
 
-export function generateStaticParams() {
-    return MOCK_PROVIDERS.map((provider) => ({
-        id: provider.id,
-    }));
-}
-
 export default async function ProviderPage({ params }: ProviderPageProps) {
-    const provider = MOCK_PROVIDERS.find((p) => p.id === params.id);
+    const provider = await getProviderDetail(params.id);
 
     if (!provider) {
         notFound();
     }
 
-    const services = await getServices(provider.id);
+    const services = await getServices(provider!.userId);
 
     return (
         <div className="min-h-screen pb-20">
-            <ProviderHeader provider={provider} />
+            <ProviderHeader
+                provider={{
+                    id: provider!.id,
+                    name: provider!.displayName ?? provider!.username,
+                    bio: provider!.bio ?? "",
+                    avatarUrl: provider!.avatarUrl ?? undefined,
+                    rating: provider!.rating,
+                    reviewCount: provider!.reviewCount,
+                    location: provider!.location ?? "",
+                    tags: provider!.skills,
+                    minPrice: services.length ? Math.min(...services.map((s) => s.price)) : 0,
+                }}
+            />
 
             <div className="container mt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
                         <Tabs defaultValue="services" className="w-full">
                             <TabsList className="w-full justify-start">
                                 <TabsTrigger value="services">Services</TabsTrigger>
                                 <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-                                <TabsTrigger value="reviews">Avis ({provider.reviewCount})</TabsTrigger>
+                                <TabsTrigger value="reviews">Avis ({provider!.reviewCount})</TabsTrigger>
                                 <TabsTrigger value="about">À propos</TabsTrigger>
                             </TabsList>
 
@@ -60,13 +65,12 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
 
                             <TabsContent value="about" className="mt-6">
                                 <div className="prose dark:prose-invert max-w-none">
-                                    <p>{provider.bio}</p>
+                                    <p>{provider!.bio ?? "Aucune description"}</p>
                                 </div>
                             </TabsContent>
                         </Tabs>
                     </div>
 
-                    {/* Sidebar (Availability / Quick Info) */}
                     <div className="space-y-6">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
                             <h3 className="font-semibold mb-4">Horaires d&apos;ouverture</h3>

@@ -2,13 +2,48 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, MessageSquare, Sparkles, Heart, Calendar, ArrowRight } from "lucide-react";
+import { Search, MessageSquare, Sparkles, Heart, Calendar } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type Booking = {
+    id: string;
+    date: string;
+    endDate: string | null;
+    status: string;
+    service: { title: string };
+    provider: { profile: { displayName: string | null } | null };
+};
 
 export default function DashboardPage() {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function load() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const res = await fetch("/api/bookings?type=artist", {
+                    headers: { Authorization: `Bearer ${token}` },
+                    cache: "no-store",
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setBookings(data.bookings ?? []);
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
+    }, []);
+
     return (
         <div className="relative min-h-screen">
-            {/* Liquid Background Elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-primary/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-screen animate-pulse-slow"></div>
                 <div
@@ -24,8 +59,8 @@ export default function DashboardPage() {
             <div className="relative z-10 space-y-8 pb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Bonjour, TrapKevFR 👋</h1>
-                        <p className="text-muted-foreground">Voici ce qui se passe sur votre profil.</p>
+                        <h1 className="text-3xl font-bold tracking-tight">Dashboard artiste</h1>
+                        <p className="text-muted-foreground">Vos prochaines sessions et vos favoris.</p>
                     </div>
                     <Button asChild variant="outline" className="bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10">
                         <Link href="/provider/dashboard">Passer en mode Prestataire</Link>
@@ -33,9 +68,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Bookings & Actions */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Quick Actions */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <Link
                                 href="/search"
@@ -75,7 +108,6 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        {/* Upcoming Sessions */}
                         <Card className="bg-card/30 backdrop-blur-lg border-white/10">
                             <div className="p-6 border-b border-white/10">
                                 <h2 className="font-semibold flex items-center gap-2">
@@ -84,24 +116,36 @@ export default function DashboardPage() {
                                 </h2>
                             </div>
                             <div className="p-6 space-y-4">
-                                {/* Mock Data */}
-                                {[1, 2].map((i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-col flex-col items-center justify-center text-xs font-bold">
-                                                <span className="text-primary">12</span>
-                                                <span className="text-muted-foreground uppercase text-[10px]">DEC</span>
+                                {loading && <div className="text-sm text-muted-foreground">Chargement...</div>}
+                                {!loading && bookings.length === 0 && (
+                                    <div className="text-sm text-muted-foreground">Aucune réservation pour le moment.</div>
+                                )}
+                                {bookings.slice(0, 4).map((booking) => {
+                                    const start = new Date(booking.date);
+                                    const end = booking.endDate ? new Date(booking.endDate) : null;
+                                    const day = start.getDate().toString().padStart(2, "0");
+                                    const month = start.toLocaleString("fr-FR", { month: "short" }).toUpperCase();
+                                    return (
+                                        <div key={booking.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-lg bg-primary/20 flex flex-col items-center justify-center text-xs font-bold">
+                                                    <span className="text-primary">{day}</span>
+                                                    <span className="text-muted-foreground uppercase text-[10px]">{month}</span>
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-medium">{booking.service.title}</h3>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Avec {booking.provider.profile?.displayName ?? "Prestataire"} • {start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                                        {end ? ` - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="font-medium">Session Studio A</h3>
-                                                <p className="text-sm text-muted-foreground">Avec StudioTrapKing • 14:00 - 18:00</p>
-                                            </div>
+                                            <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
+                                                Détails
+                                            </Button>
                                         </div>
-                                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
-                                            Détails
-                                        </Button>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 <div className="pt-2 text-center">
                                     <Button variant="link" className="text-primary">
                                         Voir tout le calendrier
@@ -111,9 +155,7 @@ export default function DashboardPage() {
                         </Card>
                     </div>
 
-                    {/* Right Column: Messages & Stats */}
                     <div className="space-y-8">
-                        {/* Recent Messages */}
                         <Card className="bg-card/30 backdrop-blur-lg border-white/10">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between">
                                 <h2 className="font-semibold">Messages récents</h2>
@@ -121,32 +163,12 @@ export default function DashboardPage() {
                                     Voir tout
                                 </Link>
                             </div>
-                            <div className="p-4 space-y-2">
-                                {[1, 2, 3].map((i) => (
-                                    <Link
-                                        key={i}
-                                        href="#"
-                                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                                    >
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
-                                            SK
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium text-sm">Studio King</span>
-                                                <span className="text-[10px] text-muted-foreground">14:02</span>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground truncate">
-                                                Salut, c'est bon pour la session de demain ?
-                                            </p>
-                                        </div>
-                                    </Link>
-                                ))}
+                            <div className="p-4 space-y-2 text-sm text-muted-foreground">
+                                Messagerie en cours d'activation.
                             </div>
                         </Card>
 
-                        {/* Promo Banner */}
-                        <div className="rounded-xl bg-gradient-to-br from-primary to-purple-600 p-6 text-primary-foreground shadow-lg relative overflow-hidden group">
+                        <div className="rounded-xl bg-gradient-to-br from-primary to-purple-600 p-6 text-primary-foreground shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <Sparkles className="h-24 w-24" />
                             </div>

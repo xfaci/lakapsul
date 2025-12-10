@@ -1,53 +1,36 @@
 'use server';
 
-import { createClient } from "@/lib/supabase-server";
-import { MOCK_SERVICES } from "@/lib/mock-data";
+import prisma from "@/lib/prisma";
 import { Service } from "@/types";
+import { ServiceType } from "@prisma/client";
 
-type ServiceRow = {
-    id: string;
-    provider_id: string;
-    name: string;
-    description: string | null;
-    price: number | null;
-    duration: number | null;
-    category: Service["category"] | null;
-    image_url: string | null;
+const serviceTypeToCategory: Record<ServiceType, Service["category"]> = {
+    RECORDING: "STUDIO",
+    MIXING: "MIXING",
+    MASTERING: "MASTERING",
+    BEATMAKING: "BEATMAKING",
+    VOCAL_COACHING: "COACHING",
+    OTHER: "STUDIO",
 };
 
-const mapServiceRow = (row: ServiceRow): Service => ({
-    id: row.id,
-    providerId: row.provider_id,
-    name: row.name,
-    description: row.description ?? "",
-    price: typeof row.price === "number" ? row.price / 100 : 0,
-    duration: row.duration ?? 0,
-    category: row.category ?? "STUDIO",
-    imageUrl: row.image_url ?? undefined,
-});
-
 export async function getServices(providerId?: string): Promise<Service[]> {
-    const supabase = await createClient();
+    const services = await prisma.service.findMany({
+        where: providerId ? { profile: { userId: providerId } } : undefined,
+        include: {
+            profile: {
+                select: { userId: true },
+            },
+        },
+        orderBy: { createdAt: "desc" },
+    });
 
-    if (!supabase) {
-        return providerId ? MOCK_SERVICES.filter((s) => s.providerId === providerId) : MOCK_SERVICES;
-    }
-
-    const query = supabase.from("services").select("*");
-
-    if (providerId) {
-        query.eq("provider_id", providerId);
-    }
-
-    const { data, error } = await query.order("created_at", { ascending: false });
-
-    if (error) {
-        console.error("Supabase services error:", error.message);
-    }
-
-    if (!data || data.length === 0) {
-        return providerId ? MOCK_SERVICES.filter((s) => s.providerId === providerId) : MOCK_SERVICES;
-    }
-
-    return data.map(mapServiceRow);
+    return services.map((service) => ({
+        id: service.id,
+        providerId: service.profile?.userId ?? service.profileId,
+        name: service.title,
+        description: service.description ?? "",
+        price: service.price,
+        duration: service.duration,
+        category: serviceTypeToCategory[service.type] ?? "STUDIO",
+    }));
 }

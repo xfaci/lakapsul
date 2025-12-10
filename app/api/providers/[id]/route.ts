@@ -1,56 +1,34 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
 export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    _request: Request,
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = await params;
-
-        const profile = await prisma.profile.findFirst({
-            where: {
-                OR: [
-                    { id },
-                    { username: id },
-                    { userId: id },
-                ],
-            },
+        const profile = await prisma.profile.findUnique({
+            where: { id: params.id },
             include: {
-                user: {
-                    select: { id: true, role: true, createdAt: true },
+                user: { select: { id: true, role: true, createdAt: true } },
+                services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
+                media: { orderBy: { createdAt: "desc" }, take: 20 },
+                receivedReviews: {
+                    include: {
+                        author: { select: { profile: true } },
+                    },
+                    orderBy: { createdAt: "desc" },
+                    take: 20,
                 },
-                services: {
-                    where: { isActive: true },
-                },
-                media: true,
             },
         });
 
         if (!profile) {
-            return NextResponse.json({ error: 'Prestataire non trouvé' }, { status: 404 });
+            return NextResponse.json({ error: "Prestataire introuvable" }, { status: 404 });
         }
 
-        // Get reviews
-        const reviews = await prisma.review.findMany({
-            where: { targetId: profile.userId },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        profile: {
-                            select: { username: true, avatarUrl: true },
-                        },
-                    },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 10,
-        });
-
-        return NextResponse.json({ ...profile, reviews });
+        return NextResponse.json(profile);
     } catch (error) {
-        console.error('Provider detail error:', error);
-        return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
+        console.error("Provider detail error:", error);
+        return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
     }
 }
