@@ -15,13 +15,6 @@ export async function GET(
                         id: true,
                         role: true,
                         createdAt: true,
-                        receivedReviews: {
-                            include: {
-                                author: { select: { profile: true } },
-                            },
-                            orderBy: { createdAt: "desc" },
-                            take: 20,
-                        },
                     },
                 },
                 services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
@@ -33,7 +26,16 @@ export async function GET(
             return NextResponse.json({ error: "Prestataire introuvable" }, { status: 404 });
         }
 
-        return NextResponse.json(profile);
+        const reviews = await prisma.review.findMany({
+            where: { targetId: profile.userId },
+            include: {
+                author: { select: { profile: true } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+        });
+
+        return NextResponse.json({ ...profile, reviews });
     } catch (error) {
         console.error("Provider detail error:", error);
         return NextResponse.json({ error: "Erreur interne" }, { status: 500 });

@@ -56,13 +56,6 @@ export async function getProviderDetail(profileId: string) {
                     id: true,
                     role: true,
                     createdAt: true,
-                    receivedReviews: {
-                        include: {
-                            author: { select: { profile: true } },
-                        },
-                        orderBy: { createdAt: "desc" },
-                        take: 20,
-                    },
                 },
             },
             services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
@@ -70,5 +63,16 @@ export async function getProviderDetail(profileId: string) {
         },
     });
 
-    return profile;
+    if (!profile) return null;
+
+    const reviews = await prisma.review.findMany({
+        where: { targetId: profile.userId },
+        include: {
+            author: { select: { profile: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+    });
+
+    return { ...profile, reviews };
 }
