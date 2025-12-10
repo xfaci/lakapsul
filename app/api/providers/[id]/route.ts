@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(
-    _request: Request,
-    { params }: { params: { id: string } }
+    _request: NextRequest,
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const profile = await prisma.profile.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 user: { select: { id: true, role: true, createdAt: true } },
                 services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },

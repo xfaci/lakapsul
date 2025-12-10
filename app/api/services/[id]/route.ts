@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { jwtVerify } from "jose";
 
@@ -17,10 +17,11 @@ async function getUserFromToken(request: Request) {
     }
 }
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await context.params;
         const service = await prisma.service.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 profile: { select: { userId: true, username: true, displayName: true } },
             },
@@ -37,8 +38,9 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await context.params;
         const user = await getUserFromToken(request);
         if (!user) {
             return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
@@ -47,7 +49,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         const body = await request.json();
 
         const existing = await prisma.service.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: { profile: { select: { userId: true } } },
         });
 
@@ -56,7 +58,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         }
 
         const updated = await prisma.service.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 title: body.title ?? existing.title,
                 description: body.description ?? existing.description,
@@ -74,15 +76,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await context.params;
         const user = await getUserFromToken(request);
         if (!user) {
             return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
         }
 
         const existing = await prisma.service.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: { profile: { select: { userId: true } } },
         });
 
@@ -90,7 +93,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
         }
 
-        await prisma.service.delete({ where: { id: params.id } });
+        await prisma.service.delete({ where: { id } });
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Delete service error:", error);
