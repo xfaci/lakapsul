@@ -6,6 +6,7 @@ import { useUserStore } from "@/store/user-store";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { Logo } from "@/components/ui/logo";
 import { Menu } from "lucide-react";
+import { NotificationBell } from "@/components/features/notification-bell";
 
 export function Navbar() {
     const { user } = useUserStore();
@@ -31,9 +32,12 @@ export function Navbar() {
                 <div className="flex items-center gap-4">
                     <ModeToggle />
                     {user ? (
-                        <Button variant="ghost" asChild>
-                            <Link href="/dashboard">Mon Espace</Link>
-                        </Button>
+                        <>
+                            <NotificationBell />
+                            <Button variant="ghost" asChild>
+                                <Link href="/dashboard">Mon Espace</Link>
+                            </Button>
+                        </>
                     ) : (
                         <div className="flex items-center gap-2">
                             <Button variant="ghost" asChild className="hidden sm:flex">

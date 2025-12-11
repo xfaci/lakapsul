@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { getProviders } from "@/app/actions/get-providers";
 
+// Force dynamic rendering to avoid database calls during build
+export const dynamic = 'force-dynamic';
+
 export default async function SearchPage() {
     const providers = await getProviders();
 

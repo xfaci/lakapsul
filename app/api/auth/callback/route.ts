@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { SignJWT } from 'jose';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret');
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
@@ -29,6 +32,8 @@ export async function GET(request: Request) {
                 include: { profile: true },
             });
 
+            const isNewUser = !dbUser;
+
             if (!dbUser) {
                 // Create user in our database
                 const username = user.email!.split('@')[0] + '_' + Math.random().toString(36).substring(2, 7);
@@ -50,14 +55,48 @@ export async function GET(request: Request) {
                 });
             }
 
-            // Redirect based on role
-            if (dbUser.role === 'PROVIDER') {
-                return NextResponse.redirect(`${origin}/provider/dashboard`);
+            // Generate JWT token
+            const token = await new SignJWT({ userId: dbUser.id, role: dbUser.role })
+                .setProtectedHeader({ alg: 'HS256' })
+                .setExpirationTime('7d')
+                .sign(JWT_SECRET);
+
+            // Create auth data for client-side sync
+            const authData = {
+                token,
+                user: {
+                    id: dbUser.id,
+                    email: dbUser.email,
+                    name: dbUser.profile?.displayName || dbUser.email,
+                    role: dbUser.role,
+                },
+            };
+
+            // Determine redirect URL
+            let redirectUrl: string;
+            if (isNewUser) {
+                redirectUrl = `${origin}/onboarding`;
+            } else if (dbUser.role === 'PROVIDER') {
+                redirectUrl = `${origin}/provider/dashboard`;
             } else if (dbUser.role === 'ADMIN') {
-                return NextResponse.redirect(`${origin}/admin/dashboard`);
+                redirectUrl = `${origin}/admin/dashboard`;
             } else {
-                return NextResponse.redirect(`${origin}/dashboard`);
+                redirectUrl = `${origin}/dashboard`;
             }
+
+            // Create response with redirect
+            const response = NextResponse.redirect(redirectUrl);
+
+            // Set auth cookie for client-side sync
+            response.cookies.set('lakapsul-auth', JSON.stringify(authData), {
+                path: '/',
+                maxAge: 60, // 1 minute - just enough time for client to read it
+                httpOnly: false, // Must be accessible by JavaScript
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+            });
+
+            return response;
         }
     }
 

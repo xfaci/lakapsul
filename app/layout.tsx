@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthSync } from "@/components/providers/auth-sync";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             <Footer />
           </div>
           <Toaster />
+          <AuthSync />
         </ThemeProvider>
       </body>
     </html>

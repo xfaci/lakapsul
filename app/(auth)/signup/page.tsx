@@ -4,28 +4,67 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/ui/icons";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mic2, Music2 } from "lucide-react";
+import { Loader2, Mic2, Music2, Check, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/user-store";
 import { hasSupabaseConfig, supabase } from "@/lib/supabase-browser";
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function SignupPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
     const [role, setRole] = useState<"ARTIST" | "PROVIDER">("ARTIST");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const router = useRouter();
     const login = useUserStore((state) => state.login);
+    const { executeRecaptcha } = useGoogleReCaptcha();
+
+    // Password validation
+    const passwordChecks = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+    };
+    const isPasswordValid = Object.values(passwordChecks).every(Boolean);
+    const doPasswordsMatch = password === confirmPassword && password.length > 0;
 
     async function onSubmit(event: React.SyntheticEvent) {
         event.preventDefault();
+
+        // Validation
+        if (!firstName.trim() || !lastName.trim()) {
+            setError("Prénom et nom requis");
+            return;
+        }
+        if (!isPasswordValid) {
+            setError("Le mot de passe ne respecte pas les critères de sécurité");
+            return;
+        }
+        if (!doPasswordsMatch) {
+            setError("Les mots de passe ne correspondent pas");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
+
+        // Get reCAPTCHA token if available
+        let recaptchaToken = null;
+        if (executeRecaptcha) {
+            try {
+                recaptchaToken = await executeRecaptcha('signup');
+            } catch (err) {
+                console.warn('reCAPTCHA failed:', err);
+            }
+        }
 
         // Create username from first and last name
         const username = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`.replace(/\s+/g, '_');
@@ -41,6 +80,9 @@ export default function SignupPage() {
                     password,
                     username,
                     role,
+                    firstName,
+                    lastName,
+                    recaptchaToken,
                 }),
             });
 
@@ -63,12 +105,12 @@ export default function SignupPage() {
                 role: data.user.role,
             });
 
-            // Redirect based on role
-            if (data.user.role === "PROVIDER") {
-                router.push("/provider/dashboard");
-            } else {
-                router.push("/dashboard");
-            }
+            setSuccess(true);
+
+            // Redirect to onboarding after a short delay
+            setTimeout(() => {
+                router.push("/onboarding");
+            }, 1500);
         } catch {
             setError("Erreur de connexion au serveur");
             setIsLoading(false);
@@ -77,8 +119,7 @@ export default function SignupPage() {
 
     async function handleOAuthLogin(provider: 'google' | 'discord') {
         if (!supabase || !hasSupabaseConfig) {
-            setError("OAuth indisponible : ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-            setIsLoading(false);
+            setError("OAuth indisponible : configuration Supabase manquante.");
             return;
         }
 
@@ -98,6 +139,19 @@ export default function SignupPage() {
         }
     }
 
+    if (success) {
+        return (
+            <div className="flex flex-col items-center justify-center space-y-4 text-center py-8">
+                <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <Check className="h-8 w-8 text-green-500" />
+                </div>
+                <h2 className="text-2xl font-semibold">Compte créé avec succès !</h2>
+                <p className="text-muted-foreground">Redirection vers la configuration de votre profil...</p>
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="flex flex-col space-y-2 text-center">
@@ -114,6 +168,8 @@ export default function SignupPage() {
                         {error}
                     </div>
                 )}
+
+                {/* Role selection */}
                 <div className="grid grid-cols-2 gap-4">
                     <div
                         className={`cursor-pointer rounded-xl border-2 p-4 hover:border-primary hover:bg-accent transition-all ${role === "ARTIST" ? "border-primary bg-accent" : "border-muted"
@@ -143,7 +199,7 @@ export default function SignupPage() {
                     <div className="grid gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="firstName">Prénom</Label>
+                                <Label htmlFor="firstName">Prénom *</Label>
                                 <Input
                                     id="firstName"
                                     placeholder="John"
@@ -154,7 +210,7 @@ export default function SignupPage() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="lastName">Nom</Label>
+                                <Label htmlFor="lastName">Nom *</Label>
                                 <Input
                                     id="lastName"
                                     placeholder="Doe"
@@ -166,7 +222,7 @@ export default function SignupPage() {
                             </div>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">Email *</Label>
                             <Input
                                 id="email"
                                 placeholder="nom@exemple.com"
@@ -181,7 +237,7 @@ export default function SignupPage() {
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Mot de passe</Label>
+                            <Label htmlFor="password">Mot de passe *</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -190,8 +246,45 @@ export default function SignupPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                            {password.length > 0 && (
+                                <div className="grid grid-cols-2 gap-2 text-xs mt-1">
+                                    <div className={`flex items-center gap-1 ${passwordChecks.length ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.length ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        8+ caractères
+                                    </div>
+                                    <div className={`flex items-center gap-1 ${passwordChecks.uppercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.uppercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        1 majuscule
+                                    </div>
+                                    <div className={`flex items-center gap-1 ${passwordChecks.lowercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.lowercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        1 minuscule
+                                    </div>
+                                    <div className={`flex items-center gap-1 ${passwordChecks.number ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.number ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        1 chiffre
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <Button disabled={isLoading}>
+                        <div className="grid gap-2">
+                            <Label htmlFor="confirmPassword">Confirmer le mot de passe *</Label>
+                            <Input
+                                id="confirmPassword"
+                                type="password"
+                                disabled={isLoading}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                            {confirmPassword.length > 0 && (
+                                <div className={`flex items-center gap-1 text-xs ${doPasswordsMatch ? 'text-green-500' : 'text-red-500'}`}>
+                                    {doPasswordsMatch ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                    {doPasswordsMatch ? 'Les mots de passe correspondent' : 'Les mots de passe ne correspondent pas'}
+                                </div>
+                            )}
+                        </div>
+                        <Button disabled={isLoading || !isPasswordValid || !doPasswordsMatch}>
                             {isLoading && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
@@ -219,6 +312,13 @@ export default function SignupPage() {
                         <span className="sr-only">Discord</span>
                     </Button>
                 </div>
+                <p className="text-xs text-center text-muted-foreground">
+                    En créant un compte, vous acceptez nos{" "}
+                    <Link href="/terms" className="underline hover:text-primary">
+                        conditions d&apos;utilisation
+                    </Link>
+                    .
+                </p>
                 <p className="px-8 text-center text-sm text-muted-foreground">
                     Déjà un compte ?{" "}
                     <Link

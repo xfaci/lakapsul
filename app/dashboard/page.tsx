@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/user-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, MessageSquare, Sparkles, Heart, Calendar } from "lucide-react";
+import { Search, MessageSquare, Sparkles, Heart, Calendar, Loader2, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 type Booking = {
     id: string;
@@ -18,9 +21,29 @@ type Booking = {
 export default function DashboardPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [profileLoading, setProfileLoading] = useState(true);
+    const { user, isAuthenticated, _hasHydrated, logout } = useUserStore();
+    const router = useRouter();
 
     useEffect(() => {
-        async function load() {
+        // Wait for hydration
+        if (!_hasHydrated) return;
+
+        // Redirect to login if not authenticated
+        if (!isAuthenticated) {
+            router.push('/login');
+            return;
+        }
+
+        // Redirect providers to their dashboard
+        if (user?.role === 'PROVIDER') {
+            router.push('/provider/dashboard');
+            return;
+        }
+
+        setProfileLoading(false);
+
+        async function loadBookings() {
             const token = localStorage.getItem("token");
             if (!token) {
                 setLoading(false);
@@ -39,36 +62,62 @@ export default function DashboardPage() {
                 setLoading(false);
             }
         }
-        load();
-    }, []);
+
+        loadBookings();
+    }, [_hasHydrated, isAuthenticated, user, router]);
+
+    const handleLogout = () => {
+        logout();
+        router.push('/');
+    };
+
+    // Show loading state
+    if (!_hasHydrated || profileLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground">Chargement...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative min-h-screen">
+            {/* Background effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-primary/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-screen animate-pulse-slow"></div>
-                <div
-                    className="absolute bottom-[-10%] right-[-10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-purple-600/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-screen animate-pulse-slow"
-                    style={{ animationDelay: "1s" }}
-                ></div>
-                <div
-                    className="absolute top-[20%] right-[20%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-blue-500/10 rounded-full blur-[60px] md:blur-[100px] mix-blend-screen animate-pulse-slow"
-                    style={{ animationDelay: "2s" }}
-                ></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-primary/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-screen animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-purple-600/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-screen animate-pulse" style={{ animationDelay: "1s" }} />
+                <div className="absolute top-[20%] right-[20%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-blue-500/10 rounded-full blur-[60px] md:blur-[100px] mix-blend-screen animate-pulse" style={{ animationDelay: "2s" }} />
             </div>
 
-            <div className="relative z-10 space-y-8 pb-8">
+            <div className="container relative z-10 py-8 space-y-8">
+                {/* Header with user info */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Dashboard artiste</h1>
-                        <p className="text-muted-foreground">Vos prochaines sessions et vos favoris.</p>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Bonjour, {user?.name || 'Artiste'} 👋
+                        </h1>
+                        <p className="text-muted-foreground">Bienvenue sur votre tableau de bord</p>
                     </div>
-                    <Button asChild variant="outline" className="bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10">
-                        <Link href="/provider/dashboard">Passer en mode Prestataire</Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild className="bg-background/50 backdrop-blur-sm">
+                            <Link href="/profile/settings">
+                                <Settings className="h-4 w-4 mr-2" />
+                                Paramètres
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Déconnexion
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
+                        {/* Quick actions */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <Link
                                 href="/search"
@@ -89,13 +138,13 @@ export default function DashboardPage() {
                                 <span className="text-sm font-medium">Messages</span>
                             </Link>
                             <Link
-                                href="/ai-assistant"
+                                href="/projects"
                                 className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border bg-card/30 backdrop-blur-lg border-white/10 hover:bg-accent/50 transition-colors group"
                             >
                                 <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
                                     <Sparkles className="h-5 w-5" />
                                 </div>
-                                <span className="text-sm font-medium">Assistant IA</span>
+                                <span className="text-sm font-medium">Mes projets</span>
                             </Link>
                             <Link
                                 href="/favorites"
@@ -108,6 +157,7 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
+                        {/* Bookings */}
                         <Card className="bg-card/30 backdrop-blur-lg border-white/10">
                             <div className="p-6 border-b border-white/10">
                                 <h2 className="font-semibold flex items-center gap-2">
@@ -118,7 +168,13 @@ export default function DashboardPage() {
                             <div className="p-6 space-y-4">
                                 {loading && <div className="text-sm text-muted-foreground">Chargement...</div>}
                                 {!loading && bookings.length === 0 && (
-                                    <div className="text-sm text-muted-foreground">Aucune réservation pour le moment.</div>
+                                    <div className="text-center py-8">
+                                        <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                                        <p className="text-muted-foreground mb-4">Aucune réservation pour le moment.</p>
+                                        <Button asChild>
+                                            <Link href="/search">Trouver un prestataire</Link>
+                                        </Button>
+                                    </div>
                                 )}
                                 {bookings.slice(0, 4).map((booking) => {
                                     const start = new Date(booking.date);
@@ -146,16 +202,33 @@ export default function DashboardPage() {
                                         </div>
                                     );
                                 })}
-                                <div className="pt-2 text-center">
-                                    <Button variant="link" className="text-primary">
-                                        Voir tout le calendrier
-                                    </Button>
-                                </div>
                             </div>
                         </Card>
                     </div>
 
+                    {/* Sidebar */}
                     <div className="space-y-8">
+                        {/* Profile card */}
+                        <Card className="bg-card/30 backdrop-blur-lg border-white/10 overflow-hidden">
+                            <div className="p-6 text-center">
+                                <div className="flex justify-center mb-4">
+                                    <UserAvatar
+                                        name={user?.name}
+                                        size="xl"
+                                        className="ring-4 ring-white/10"
+                                    />
+                                </div>
+                                <h3 className="font-semibold text-lg">{user?.name || 'Artiste'}</h3>
+                                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                                <div className="mt-4">
+                                    <Button variant="outline" size="sm" asChild className="w-full">
+                                        <Link href="/profile/settings">Modifier mon profil</Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Messages */}
                         <Card className="bg-card/30 backdrop-blur-lg border-white/10">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between">
                                 <h2 className="font-semibold">Messages récents</h2>
@@ -163,21 +236,23 @@ export default function DashboardPage() {
                                     Voir tout
                                 </Link>
                             </div>
-                            <div className="p-4 space-y-2 text-sm text-muted-foreground">
-                                Messagerie en cours d'activation.
+                            <div className="p-4 text-center text-sm text-muted-foreground">
+                                <MessageSquare className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                                Aucun message
                             </div>
                         </Card>
 
+                        {/* Promo card */}
                         <div className="rounded-xl bg-gradient-to-br from-primary to-purple-600 p-6 text-primary-foreground shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <Sparkles className="h-24 w-24" />
                             </div>
-                            <h3 className="font-bold text-lg mb-2 relative z-10">Besoin d'un coup de boost ?</h3>
+                            <h3 className="font-bold text-lg mb-2 relative z-10">Besoin d&apos;un coup de boost ?</h3>
                             <p className="text-sm opacity-90 mb-4 relative z-10">
                                 Découvrez nos services de promotion pour faire décoller votre dernier titre.
                             </p>
-                            <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-white border-none relative z-10">
-                                Voir les offres
+                            <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-white border-none relative z-10" asChild>
+                                <Link href="/pricing">Voir les offres</Link>
                             </Button>
                         </div>
                     </div>

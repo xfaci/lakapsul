@@ -35,6 +35,12 @@ model User {
   notifications        Notification[]
   reviews              Review[]          @relation("ReviewAuthor")
   receivedReviews      Review[]          @relation("ReviewTarget")
+  
+  // Stripe relations
+  subscription         Subscription?
+  boosts               Boost[]
+  payouts              Payout[]
+  stripeAccount        StripeAccount?
 }
 
 // ==================== PROFILES ====================
@@ -119,6 +125,7 @@ model Booking {
   notes       String?
   
   stripePaymentId String?
+  payouts         Payout[]
   
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -280,3 +287,112 @@ model Notification {
   
   createdAt   DateTime         @default(now())
 }
+
+// ==================== SUBSCRIPTIONS ====================
+
+enum SubscriptionPlan {
+  FREE
+  MID
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  EXPIRED
+}
+
+model Subscription {
+  id                  String             @id @default(cuid())
+  
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan                SubscriptionPlan   @default(FREE)
+  status              SubscriptionStatus @default(ACTIVE)
+  
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  stripePriceId       String?
+  
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  
+  commissionRate      Float              @default(0.10) // 10% default
+  
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+// ==================== BOOSTS ====================
+
+enum BoostType {
+  STANDARD  // 24h
+  PREMIUM   // 7 days
+  MEGA      // 30 days
+}
+
+model Boost {
+  id          String    @id @default(cuid())
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        BoostType
+  startsAt    DateTime  @default(now())
+  expiresAt   DateTime
+  
+  stripePaymentId String?
+  
+  createdAt   DateTime  @default(now())
+}
+
+// ==================== PAYOUTS (PROVIDER EARNINGS) ====================
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Payout {
+  id              String       @id @default(cuid())
+  
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  
+  bookingId       String
+  booking         Booking      @relation(fields: [bookingId], references: [id])
+  
+  amount          Float        // Amount before commission
+  commission      Float        // Commission amount
+  netAmount       Float        // Amount to pay provider
+  
+  status          PayoutStatus @default(PENDING)
+  stripeTransferId String?
+  
+  scheduledAt     DateTime     // When payout should be sent
+  processedAt     DateTime?    // When actually processed
+  
+  createdAt       DateTime     @default(now())
+}
+
+// ==================== STRIPE CONNECT ====================
+
+model StripeAccount {
+  id                String   @id @default(cuid())
+  
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  stripeAccountId   String   @unique
+  chargesEnabled    Boolean  @default(false)
+  payoutsEnabled    Boolean  @default(false)
+  detailsSubmitted  Boolean  @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
