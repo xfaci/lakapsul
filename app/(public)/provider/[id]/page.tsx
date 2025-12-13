@@ -2,36 +2,38 @@ import { getProviderDetail } from "@/app/actions/get-providers";
 import { getServices } from "@/app/actions/get-services";
 import { ProviderHeader } from "@/components/features/provider/provider-header";
 import { ServiceList } from "@/components/features/provider/service-list";
+import { ReviewList } from "@/components/features/reviews/review-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
 
 interface ProviderPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default async function ProviderPage({ params }: ProviderPageProps) {
-    const provider = await getProviderDetail(params.id);
+    const { id } = await params;
+    const provider = await getProviderDetail(id);
 
     if (!provider) {
         notFound();
     }
 
-    const services = await getServices(provider!.userId);
+    const services = await getServices(provider.userId);
 
     return (
         <div className="min-h-screen pb-20">
             <ProviderHeader
                 provider={{
-                    id: provider!.id,
-                    name: provider!.displayName ?? provider!.username,
-                    bio: provider!.bio ?? "",
-                    avatarUrl: provider!.avatarUrl ?? undefined,
-                    rating: provider!.rating,
-                    reviewCount: provider!.reviewCount,
-                    location: provider!.location ?? "",
-                    tags: provider!.skills,
+                    id: provider.id,
+                    name: provider.displayName ?? provider.username,
+                    bio: provider.bio ?? "",
+                    avatarUrl: provider.avatarUrl ?? undefined,
+                    rating: provider.rating,
+                    reviewCount: provider.reviewCount,
+                    location: provider.location ?? "",
+                    tags: provider.skills,
                     minPrice: services.length ? Math.min(...services.map((s) => s.price)) : 0,
                 }}
             />
@@ -43,7 +45,7 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                             <TabsList className="w-full justify-start">
                                 <TabsTrigger value="services">Services</TabsTrigger>
                                 <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-                                <TabsTrigger value="reviews">Avis ({provider!.reviewCount})</TabsTrigger>
+                                <TabsTrigger value="reviews">Avis ({provider.reviewCount})</TabsTrigger>
                                 <TabsTrigger value="about">À propos</TabsTrigger>
                             </TabsList>
 
@@ -58,14 +60,12 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                             </TabsContent>
 
                             <TabsContent value="reviews" className="mt-6">
-                                <div className="p-8 text-center text-muted-foreground border rounded-lg border-dashed">
-                                    Liste des avis à venir...
-                                </div>
+                                <ReviewList targetId={provider.userId} />
                             </TabsContent>
 
                             <TabsContent value="about" className="mt-6">
                                 <div className="prose dark:prose-invert max-w-none">
-                                    <p>{provider!.bio ?? "Aucune description"}</p>
+                                    <p>{provider.bio ?? "Aucune description"}</p>
                                 </div>
                             </TabsContent>
                         </Tabs>
@@ -95,3 +95,4 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
         </div>
     );
 }
+
