@@ -36,12 +36,32 @@ model User {
   notifications        Notification[]
   reviews              Review[]          @relation("ReviewAuthor")
   receivedReviews      Review[]          @relation("ReviewTarget")
+  verificationTokens   VerificationToken[]
   
   // Stripe relations
   subscription         Subscription?
   boosts               Boost[]
   payouts              Payout[]
   stripeAccount        StripeAccount?
+}
+
+// ==================== VERIFICATION TOKENS ====================
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  type      TokenType
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([token])
 }
 
 // ==================== PROFILES ====================
