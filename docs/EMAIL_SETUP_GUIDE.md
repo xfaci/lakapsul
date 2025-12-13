@@ -11,12 +11,12 @@ Complete guide to configure email functionality for La Kapsul.
 ### Setup Steps
 
 1. **Create account** at https://resend.com
-2. **Verify domain** `lakapsul.com` (or use default `onboarding@resend.dev` for testing)
+2. **Verify domain** `lakapsul.fr` (or use default `onboarding@resend.dev` for testing)
 3. **Get API Key** from dashboard
 4. **Add to Vercel** environment variables:
    ```
    RESEND_API_KEY=re_xxxxxxxxxxxx
-   EMAIL_FROM=La Kapsul <noreply@lakapsul.com>
+   EMAIL_FROM=La Kapsul <noreply@lakapsul.fr>
    ```
 
 ### Install SDK
@@ -46,7 +46,7 @@ export async function sendEmail({
 }) {
     try {
         await resend.emails.send({
-            from: process.env.EMAIL_FROM || 'La Kapsul <noreply@lakapsul.com>',
+            from: process.env.EMAIL_FROM || 'La Kapsul <noreply@lakapsul.fr>',
             to,
             subject,
             html,
@@ -70,7 +70,7 @@ export function welcomeEmail(name: string) {
         <h1>Bienvenue sur La Kapsul, ${name} ! 🎵</h1>
         <p>Votre compte a été créé avec succès.</p>
         <p>Commencez dès maintenant à explorer notre plateforme.</p>
-        <a href="https://lakapsul.com/search">Trouver un prestataire</a>
+        <a href="https://lakapsul.fr/search">Trouver un prestataire</a>
     `;
 }
 ```
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
         data: { userId: user.id, token, expiresAt }
     });
     
-    const resetUrl = `https://lakapsul.com/reset-password?token=${token}`;
+    const resetUrl = `https://lakapsul.fr/reset-password?token=${token}`;
     await sendEmail({
         to: email,
         subject: 'Réinitialisation de votre mot de passe',
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
 | Variable | Description |
 |----------|-------------|
 | `RESEND_API_KEY` | Resend API key |
-| `EMAIL_FROM` | Sender address (e.g., `La Kapsul <noreply@lakapsul.com>`) |
+| `EMAIL_FROM` | Sender address (e.g., `La Kapsul <noreply@lakapsul.fr>`) |
 
 ---
 
@@ -176,3 +176,15 @@ export async function POST(request: Request) {
 | **SendGrid** | 100/day | Robust, enterprise |
 | **Mailgun** | 5,000/month | Good deliverability |
 | **Postmark** | 100/month | Fast, reliable |
+
+---
+
+## 7. Domain Setup for lakapsul.fr
+
+When you get the domain, add these DNS records in Resend:
+
+| Type | Name | Value |
+|------|------|-------|
+| TXT | @ | resend-verification=xxx |
+| MX | mail | feedback-smtp.lakapsul.fr |
+| CNAME | resend._domainkey | xxx.dkim.resend.dev |

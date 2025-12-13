@@ -23,7 +23,15 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
         const service = await prisma.service.findUnique({
             where: { id },
             include: {
-                profile: { select: { userId: true, username: true, displayName: true } },
+                profile: {
+                    select: {
+                        userId: true,
+                        username: true,
+                        displayName: true,
+                        avatarUrl: true,
+                        location: true,
+                    }
+                },
             },
         });
 
@@ -31,7 +39,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
             return NextResponse.json({ error: "Service introuvable" }, { status: 404 });
         }
 
-        return NextResponse.json(service);
+        return NextResponse.json({ service });
     } catch (error) {
         console.error("Service detail error:", error);
         return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
