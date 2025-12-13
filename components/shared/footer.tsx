@@ -35,9 +35,9 @@ export function Footer() {
                     <div>
                         <h3 className="font-semibold mb-4">Réseaux</h3>
                         <ul className="space-y-2 text-sm">
-                            <li><Link href="#" className="text-muted-foreground hover:text-primary">Instagram</Link></li>
-                            <li><Link href="#" className="text-muted-foreground hover:text-primary">Twitter</Link></li>
-                            <li><Link href="#" className="text-muted-foreground hover:text-primary">LinkedIn</Link></li>
+                            <li><a href="https://instagram.com/lakapsul" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">Instagram</a></li>
+                            <li><a href="https://twitter.com/lakapsul" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">Twitter</a></li>
+                            <li><a href="https://linkedin.com/company/lakapsul" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">LinkedIn</a></li>
                         </ul>
                     </div>
                 </div>
