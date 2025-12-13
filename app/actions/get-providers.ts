@@ -17,62 +17,73 @@ export type ProviderSummary = {
 };
 
 export async function getProviders(): Promise<ProviderSummary[]> {
-    const profiles = await prisma.profile.findMany({
-        where: { user: { role: "PROVIDER" } },
-        include: {
-            user: { select: { id: true } },
-            services: { where: { isActive: true }, select: { price: true } },
-        },
-        orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
-        take: 60,
-    });
+    try {
+        const profiles = await prisma.profile.findMany({
+            where: { user: { role: "PROVIDER" } },
+            include: {
+                user: { select: { id: true } },
+                services: { where: { isActive: true }, select: { price: true } },
+            },
+            orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+            take: 60,
+        });
 
-    return profiles.map((p) => {
-        const minPrice = p.services.length
-            ? Math.min(...p.services.map((s) => s.price))
-            : null;
-        return {
-            id: p.id,
-            userId: p.userId,
-            username: p.username,
-            displayName: p.displayName ?? p.username,
-            bio: p.bio,
-            location: p.location,
-            avatarUrl: p.avatarUrl,
-            rating: p.rating,
-            reviewCount: p.reviewCount,
-            tags: p.skills,
-            minPrice,
-        };
-    });
+        return profiles.map((p) => {
+            const minPrice = p.services.length
+                ? Math.min(...p.services.map((s) => s.price))
+                : null;
+            return {
+                id: p.id,
+                userId: p.userId,
+                username: p.username,
+                displayName: p.displayName ?? p.username,
+                bio: p.bio,
+                location: p.location,
+                avatarUrl: p.avatarUrl,
+                rating: p.rating,
+                reviewCount: p.reviewCount,
+                tags: p.skills,
+                minPrice,
+            };
+        });
+    } catch (error) {
+        console.error('Failed to fetch providers:', error);
+        // Return empty array instead of crashing - allows page to render
+        return [];
+    }
 }
 
 export async function getProviderDetail(profileId: string) {
-    const profile = await prisma.profile.findUnique({
-        where: { id: profileId },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    role: true,
-                    createdAt: true,
+    try {
+        const profile = await prisma.profile.findUnique({
+            where: { id: profileId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        role: true,
+                        createdAt: true,
+                    },
                 },
+                services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
+                media: { orderBy: { createdAt: "desc" }, take: 20 },
             },
-            services: { where: { isActive: true }, orderBy: { createdAt: "desc" } },
-            media: { orderBy: { createdAt: "desc" }, take: 20 },
-        },
-    });
+        });
 
-    if (!profile) return null;
+        if (!profile) return null;
 
-    const reviews = await prisma.review.findMany({
-        where: { targetId: profile.userId },
-        include: {
-            author: { select: { profile: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-    });
+        const reviews = await prisma.review.findMany({
+            where: { targetId: profile.userId },
+            include: {
+                author: { select: { profile: true } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+        });
 
-    return { ...profile, reviews };
+        return { ...profile, reviews };
+    } catch (error) {
+        console.error('Failed to fetch provider detail:', error);
+        return null;
+    }
 }
