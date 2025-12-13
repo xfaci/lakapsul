@@ -3,6 +3,8 @@ import { getServices } from "@/app/actions/get-services";
 import { ProviderHeader } from "@/components/features/provider/provider-header";
 import { ServiceList } from "@/components/features/provider/service-list";
 import { ReviewList } from "@/components/features/reviews/review-list";
+import { PortfolioGrid } from "@/components/features/provider/portfolio-grid";
+import { CalendarView } from "@/components/features/provider/calendar-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
 
@@ -54,9 +56,7 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                             </TabsContent>
 
                             <TabsContent value="portfolio" className="mt-6">
-                                <div className="p-8 text-center text-muted-foreground border rounded-lg border-dashed">
-                                    Portfolio à venir...
-                                </div>
+                                <PortfolioGrid profileId={provider.id} />
                             </TabsContent>
 
                             <TabsContent value="reviews" className="mt-6">
@@ -73,21 +73,7 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
 
                     <div className="space-y-6">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                            <h3 className="font-semibold mb-4">Horaires d&apos;ouverture</h3>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span>Lundi - Vendredi</span>
-                                    <span>10:00 - 20:00</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Samedi</span>
-                                    <span>14:00 - 20:00</span>
-                                </div>
-                                <div className="flex justify-between text-muted-foreground">
-                                    <span>Dimanche</span>
-                                    <span>Fermé</span>
-                                </div>
-                            </div>
+                            <CalendarView profileId={provider.id} />
                         </div>
                     </div>
                 </div>
@@ -95,4 +81,5 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
         </div>
     );
 }
+
 

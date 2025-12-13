@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Loader2, CheckCircle, ArrowLeft, CreditCard } from "lucide-react";
+import { Calendar, Clock, Loader2, CheckCircle, ArrowLeft, CreditCard, Star } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useUserStore } from "@/store/user-store";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { ReviewForm } from "@/components/features/reviews/review-form";
 import Link from "next/link";
 
 type Service = {
@@ -35,6 +36,9 @@ export default function BookingPage() {
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [showReview, setShowReview] = useState(false);
+    const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
     // Form state
     const [date, setDate] = useState("");
@@ -116,6 +120,8 @@ export default function BookingPage() {
                 return;
             }
 
+            const data = await res.json();
+            setBookingId(data.booking?.id || null);
             setSuccess(true);
         } catch (err) {
             console.error("Error creating booking:", err);
@@ -135,7 +141,7 @@ export default function BookingPage() {
 
     if (success) {
         return (
-            <div className="container max-w-2xl py-20">
+            <div className="container max-w-2xl py-20 space-y-6">
                 <Card className="bg-card/30 backdrop-blur-lg border-white/10 p-12 text-center">
                     <div className="h-20 w-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="h-10 w-10 text-green-500" />
@@ -154,6 +160,37 @@ export default function BookingPage() {
                         </Button>
                     </div>
                 </Card>
+
+                {/* Review Section */}
+                {service && !reviewSubmitted && (
+                    <Card className="bg-card/30 backdrop-blur-lg border-white/10 p-6">
+                        {!showReview ? (
+                            <div className="text-center">
+                                <Star className="h-10 w-10 text-yellow-500 mx-auto mb-3" />
+                                <h3 className="font-semibold mb-2">Que pensez-vous de {service.profile.displayName} ?</h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Votre avis aide la communauté à choisir
+                                </p>
+                                <Button onClick={() => setShowReview(true)} variant="outline">
+                                    Laisser un avis
+                                </Button>
+                            </div>
+                        ) : (
+                            <ReviewForm
+                                targetId={service.profile.userId}
+                                bookingId={bookingId || undefined}
+                                onSuccess={() => setReviewSubmitted(true)}
+                            />
+                        )}
+                    </Card>
+                )}
+
+                {reviewSubmitted && (
+                    <Card className="bg-green-500/10 border-green-500/20 p-6 text-center">
+                        <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                        <p className="text-green-400">Merci pour votre avis !</p>
+                    </Card>
+                )}
             </div>
         );
     }

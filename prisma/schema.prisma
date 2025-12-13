@@ -62,11 +62,42 @@ model Profile {
   rating      Float    @default(0)
   reviewCount Int      @default(0)
   
-  services    Service[]
-  media       Media[]
+  services      Service[]
+  media         Media[]
+  availability  Availability[]
+  blockedSlots  BlockedSlot[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ==================== AVAILABILITY ====================
+
+model Availability {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  dayOfWeek Int      // 0=Sunday, 6=Saturday
+  startTime String   // "09:00"
+  endTime   String   // "18:00"
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, dayOfWeek])
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  
+  createdAt DateTime @default(now())
 }
 
 // ==================== SERVICES ====================

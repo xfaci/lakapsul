@@ -28,6 +28,8 @@ export function ProviderSidebar() {
     const links = [
         { href: "/provider/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard },
         { href: "/provider/bookings", label: "Réservations", icon: Calendar, badge: "3" },
+        { href: "/provider/availability", label: "Disponibilités", icon: Calendar },
+        { href: "/provider/portfolio", label: "Portfolio", icon: ListMusic },
         { href: "/provider/messages", label: "Messagerie", icon: MessageSquare },
         { href: "/provider/services", label: "Mes Services", icon: ListMusic },
         { href: "/provider/payouts", label: "Mes Revenus", icon: Wallet },
