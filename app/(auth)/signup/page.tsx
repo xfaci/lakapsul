@@ -103,6 +103,7 @@ export default function SignupPage() {
                 email: data.user.email,
                 name: data.user.profile?.displayName || `${firstName} ${lastName}`,
                 role: data.user.role,
+                emailVerified: data.user.emailVerified,
             });
 
             setSuccess(true);

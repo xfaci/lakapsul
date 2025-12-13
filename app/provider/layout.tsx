@@ -1,6 +1,7 @@
 "use client";
 
 import { ProviderSidebar } from "@/components/provider/sidebar";
+import { EmailVerificationGate } from "@/components/providers/email-verification-gate";
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,12 +43,13 @@ export default function ProviderLayout({
                     </div>
                 </header>
 
-                {/* Main Content */}
+                {/* Main Content - Protected by email verification */}
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                    {children}
+                    <EmailVerificationGate>
+                        {children}
+                    </EmailVerificationGate>
                 </main>
             </div>
         </div>
     );
 }
-

@@ -19,7 +19,11 @@ export type ProviderSummary = {
 export async function getProviders(): Promise<ProviderSummary[]> {
     try {
         const profiles = await prisma.profile.findMany({
-            where: { user: { role: "PROVIDER" } },
+            where: {
+                user: { role: "PROVIDER" },
+                // Only show providers with at least one active service
+                services: { some: { isActive: true } },
+            },
             include: {
                 user: { select: { id: true } },
                 services: { where: { isActive: true }, select: { price: true } },

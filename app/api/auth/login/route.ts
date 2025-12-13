@@ -46,6 +46,7 @@ export async function POST(request: Request) {
                 id: user.id,
                 email: user.email,
                 role: user.role,
+                emailVerified: !!user.emailVerified,
                 profile: user.profile,
             },
             token,

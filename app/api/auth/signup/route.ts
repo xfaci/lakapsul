@@ -94,6 +94,7 @@ export async function POST(request: Request) {
                 id: user.id,
                 email: user.email,
                 role: user.role,
+                emailVerified: false, // New users are not verified yet
                 profile: user.profile,
             },
             token,

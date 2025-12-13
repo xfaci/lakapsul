@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   avatarUrl?: string;
   bio?: string;
+  emailVerified?: boolean;
 }
 
 export interface Service {

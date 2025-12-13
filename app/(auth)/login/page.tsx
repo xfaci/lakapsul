@@ -50,6 +50,7 @@ export default function LoginPage() {
                 email: data.user.email,
                 name: data.user.profile?.displayName || data.user.email,
                 role: data.user.role,
+                emailVerified: data.user.emailVerified,
             });
 
             // Redirect based on role
