@@ -62,24 +62,30 @@ export async function POST(request: Request) {
             },
         });
 
-        // Send welcome email with verification link
+        // Send welcome email with verification link (non-blocking)
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lakapsul.vercel.app';
         const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`;
 
-        const welcomeTemplate = emailTemplates.welcome(username);
-        await sendEmail({
-            to: email,
-            subject: welcomeTemplate.subject,
-            html: welcomeTemplate.html + `
-                <div style="margin-top: 20px; padding: 20px; background: #F3F4F6; border-radius: 8px;">
-                    <p style="margin: 0 0 10px 0;"><strong>Vérifie ton email</strong></p>
-                    <p style="margin: 0 0 15px 0;">Clique sur le bouton ci-dessous pour activer ton compte :</p>
-                    <a href="${verifyUrl}" style="background: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
-                        Vérifier mon email
-                    </a>
-                </div>
-            `,
-        });
+        // Try to send email but don't fail signup if it fails
+        try {
+            const welcomeTemplate = emailTemplates.welcome(username);
+            await sendEmail({
+                to: email,
+                subject: welcomeTemplate.subject,
+                html: welcomeTemplate.html + `
+                    <div style="margin-top: 20px; padding: 20px; background: #F3F4F6; border-radius: 8px;">
+                        <p style="margin: 0 0 10px 0;"><strong>Vérifie ton email</strong></p>
+                        <p style="margin: 0 0 15px 0;">Clique sur le bouton ci-dessous pour activer ton compte :</p>
+                        <a href="${verifyUrl}" style="background: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                            Vérifier mon email
+                        </a>
+                    </div>
+                `,
+            });
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Continue with signup even if email fails
+        }
 
         // Generate JWT
         const token = await new SignJWT({ userId: user.id, role: user.role })
@@ -100,7 +106,12 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error('Signup error:', error);
-        return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
+        // Return more specific error for debugging
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+        return NextResponse.json({
+            error: 'Erreur interne du serveur',
+            details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        }, { status: 500 });
     }
 }
 
